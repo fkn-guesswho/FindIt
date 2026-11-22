@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Browse Items | FindIt</title>
+</head>
+<body>
+
+    <h1>FindIt - Browse Lost and Found Items</h1>
+
+    <p>Browse reports submitted by the university community.</p>
+
+    <form method="GET">
+
+        <input
+            type="text"
+            name="q"
+            placeholder="Search for an item..."
+            value="{{ search_query }}"
+        >
+
+        <select name="type">
+            <option value="">All Reports</option>
+
+            <option value="LOST"
+                {% if selected_type == 'LOST' %}selected{% endif %}>
+                Lost Items
+            </option>
+
+            <option value="FOUND"
+                {% if selected_type == 'FOUND' %}selected{% endif %}>
+                Found Items
+            </option>
+        </select>
+
+        <select name="category">
+            <option value="">All Categories</option>
+
+            {% for value, label in categories %}
+                <option value="{{ value }}"
+                    {% if selected_category == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Search</button>
+
+        <a href="{% url 'browse_items' %}">Clear Filters</a>
+
+    </form>
+
+    <hr>
+
+    {% if items %}
+
+        {% for item in items %}
+
+            <div>
+       
+    <h2>
+         <a href="{% url 'item_detail' item.id %}">
+             {{ item.title }}
+         </a>
+    </h2>
+                <p><strong>Report type:</strong>
+                    {{ item.get_report_type_display }}
+                </p>
+
+                <p><strong>Category:</strong>
+                    {{ item.get_category_display }}
+                </p>
+
+                <p>{{ item.description }}</p>
+
+                <p><strong>Location:</strong>
+                    {{ item.campus }}, {{ item.building }}
+                </p>
+
+                <p><strong>Date:</strong> {{ item.date_occurred }}</p>
+
+                <p><strong>Reported:</strong> {{ item.created_at }}</p>
+            </div>
+
+            <hr>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>No matching open reports found.</p>
+
+    {% endif %}
+
+    <p>
+        <a href="{% url 'create_item_report' %}">Report an Item</a>
+    </p>
+
+    <p>
+        <a href="{% url 'my_item_reports' %}">My Reports</a>
+    </p>
+
+</body>
+</html>

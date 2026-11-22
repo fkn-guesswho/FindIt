@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Report an Item | FindIt</title>
+</head>
+<body>
+
+    <h1>Report a Lost or Found Item</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">Submit Report</button>
+    </form>
+
+    <p><a href="{% url 'my_item_reports' %}">My Reports</a></p>
+
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Reports | FindIt</title>
+</head>
+<body>
+
+    <h1>My Item Reports</h1>
+
+    <a href="{% url 'create_item_report' %}">
+        Report Another Item
+    </a>
+
+    {% if items %}
+
+        {% for item in items %}
+            <div>
+                <h2>{{ item.title }}</h2>
+
+                <p>{{ item.get_report_type_display }}</p>
+                <p>{{ item.get_category_display }}</p>
+                <p>{{ item.description }}</p>
+                <p>Location: {{ item.campus }}, {{ item.building }}, {{ item.specific_location }}</p>
+                <p>Date: {{ item.date_occurred }}</p>
+                <p>Status: {{ item.get_status_display }}</p>
+                <p>Reported: {{ item.created_at }}</p>
+            </div>
+            <hr>
+        {% endfor %}
+
+    {% else %}
+        <p>You haven't submitted any reports yet.</p>
+    {% endif %}
+
+</body>
+</html>

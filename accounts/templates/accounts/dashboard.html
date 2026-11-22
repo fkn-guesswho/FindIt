@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | FindIt</title>
+</head>
+<body>
+
+    <header>
+        <h1>FindIt</h1>
+
+        <nav>
+            <a href="{% url 'dashboard' %}">Dashboard</a>
+            |
+            <a href="{% url 'profile' %}">My Profile</a>
+            |
+            <a href="{% url 'password_change' %}">Change Password</a>
+        </nav>
+    </header>
+
+    <main>
+
+        <h2>Welcome to FindIt, {{ user.username }}!</h2>
+
+        <p>You are successfully logged in.</p>
+
+        <p>Your lost-and-found journey starts here.</p>
+
+    </main>
+
+    <form method="POST" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit">Log Out</button>
+    </form>
+
+</body>
+</html>

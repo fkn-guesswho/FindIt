@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ item.title }} | FindIt</title>
+</head>
+<body>
+
+    <h1>{{ item.title }}</h1>
+
+    <p><strong>Report type:</strong>
+        {{ item.get_report_type_display }}
+    </p>
+
+    <p><strong>Category:</strong>
+        {{ item.get_category_display }}
+    </p>
+
+    <h3>Description</h3>
+    <p>{{ item.description }}</p>
+
+    <h3>Location</h3>
+    <p>Campus: {{ item.campus }}</p>
+    <p>Building: {{ item.building }}</p>
+    <p>Specific location: {{ item.specific_location }}</p>
+
+    <p><strong>Date occurred:</strong> {{ item.date_occurred }}</p>
+    <p><strong>Report submitted:</strong> {{ item.created_at }}</p>
+
+    <p><strong>Status:</strong> {{ item.get_status_display }}</p>
+
+    <hr>
+
+    <a href="{% url 'browse_items' %}">Back to Browse Items</a>
+
+</body>
+</html>
