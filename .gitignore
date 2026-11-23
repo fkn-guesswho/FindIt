@@ -7,6 +7,7 @@ __pycache__/
 !.env.example
 db.sqlite3
 media/
+private_uploads/
 staticfiles/
 .pytest_cache/
 .coverage

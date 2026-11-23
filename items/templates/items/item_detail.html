@@ -3,11 +3,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>{{ item.title }} | FindIt</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/item_detail.css' %}">
 </head>
+
 <body>
 
     <h1>{{ item.title }}</h1>
+
+    <div class="item-carousel">
+
+        {% if item.image or item.additional_images.exists %}
+
+            <div class="carousel-container">
+
+                {% if item.image %}
+                    <div class="carousel-slide active">
+                        <img src="{{ item.image.url }}"
+                             alt="{{ item.title }}">
+                    </div>
+                {% endif %}
+
+                {% for extra_image in item.additional_images.all %}
+                    <div class="carousel-slide {% if not item.image and forloop.first %}active{% endif %}">
+                        <img src="{{ extra_image.image.url }}"
+                             alt="Additional photo of {{ item.title }}">
+                    </div>
+                {% endfor %}
+
+                {% if item.image or item.additional_images.count > 1 %}
+                    <button type="button"
+                            class="carousel-btn prev"
+                            onclick="changeSlide(-1)">
+                        &#10094;
+                    </button>
+
+                    <button type="button"
+                            class="carousel-btn next"
+                            onclick="changeSlide(1)">
+                        &#10095;
+                    </button>
+                {% endif %}
+
+            </div>
+
+            <p class="carousel-counter">
+                <span id="current-slide">1</span> /
+                <span id="total-slides"></span>
+            </p>
+
+        {% else %}
+            <p>No images available for this item.</p>
+        {% endif %}
+
+    </div>
 
     <p><strong>Report type:</strong>
         {{ item.get_report_type_display }}
@@ -30,9 +83,18 @@
 
     <p><strong>Status:</strong> {{ item.get_status_display }}</p>
 
+    {% if can_claim %}
+        <hr>
+        <a href="{% url 'submit_claim' item.id %}">
+            Claim This Item
+        </a>
+    {% endif %}
+
     <hr>
 
-    <a href="{% url 'browse_items' %}">Back to Browse Items</a>
+    <a href="{% url 'browse_items' %}">← Back to Browse Items</a>
+
+    <script src="{% static 'js/item_detail.js' %}"></script>
 
 </body>
 </html>

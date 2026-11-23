@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Claim Item | FindIt</title>
+</head>
+<body>
+
+    <h1>Submit an Ownership Claim</h1>
+
+    <h2>{{ item.title }}</h2>
+
+    <p>
+        Explain why you believe this item belongs to you.
+        Do not include passwords or other unnecessary sensitive information.
+    </p>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        <button type="submit">Submit Claim</button>
+    </form>
+
+    <p>
+        <a href="{% url 'item_detail' item.id %}">
+            Cancel and return to item
+        </a>
+    </p>
+
+</body>
+</html>

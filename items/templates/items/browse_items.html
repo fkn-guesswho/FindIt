@@ -4,6 +4,31 @@
 <head>
     <meta charset="UTF-8">
     <title>Browse Items | FindIt</title>
+
+    <style>
+        .item-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-preview {
+            width: 130px;
+            height: 110px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+    </style>
 </head>
 <body>
 
@@ -57,33 +82,47 @@
 
         {% for item in items %}
 
-            <div>
-       
-    <h2>
-         <a href="{% url 'item_detail' item.id %}">
-             {{ item.title }}
-         </a>
-    </h2>
-                <p><strong>Report type:</strong>
-                    {{ item.get_report_type_display }}
-                </p>
+            <div class="item-card">
 
-                <p><strong>Category:</strong>
-                    {{ item.get_category_display }}
-                </p>
+                <div class="item-info">
 
-                <p>{{ item.description }}</p>
+                    <h2>
+                        <a href="{% url 'item_detail' item.id %}">
+                            {{ item.title }}
+                        </a>
+                    </h2>
 
-                <p><strong>Location:</strong>
-                    {{ item.campus }}, {{ item.building }}
-                </p>
+                    <p><strong>Report type:</strong>
+                        {{ item.get_report_type_display }}
+                    </p>
 
-                <p><strong>Date:</strong> {{ item.date_occurred }}</p>
+                    <p><strong>Category:</strong>
+                        {{ item.get_category_display }}
+                    </p>
 
-                <p><strong>Reported:</strong> {{ item.created_at }}</p>
+                    <p>{{ item.description }}</p>
+
+                    <p><strong>Location:</strong>
+                        {{ item.campus }}, {{ item.building }}
+                    </p>
+
+                    <p><strong>Date:</strong> {{ item.date_occurred }}</p>
+
+                    <p><strong>Reported:</strong> {{ item.created_at }}</p>
+
+                </div>
+
+                {% if item.image %}
+                    <a href="{% url 'item_detail' item.id %}">
+                        <img
+                            src="{{ item.image.url }}"
+                            alt="{{ item.title }}"
+                            class="item-preview"
+                        >
+                    </a>
+                {% endif %}
+
             </div>
-
-            <hr>
 
         {% endfor %}
 

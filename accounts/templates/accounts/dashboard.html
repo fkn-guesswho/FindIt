@@ -11,10 +11,14 @@
         <h1>FindIt</h1>
 
         <nav>
-            <a href="{% url 'dashboard' %}">Dashboard</a>
-            |
-            <a href="{% url 'profile' %}">My Profile</a>
-            |
+            <a href="{% url 'browse_items' %}">Browse Items</a> |
+
+            <a href="{% url 'create_item_report' %}">Report an Item</a> |
+
+            <a href="{% url 'my_item_reports' %}">My Reports</a> |
+
+            <a href="{% url 'profile' %}">My Profile</a> |
+
             <a href="{% url 'password_change' %}">Change Password</a>
         </nav>
     </header>
