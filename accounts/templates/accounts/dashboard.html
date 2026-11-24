@@ -1,42 +1,62 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | FindIt</title>
-</head>
-<body>
 
-    <header>
-        <h1>FindIt</h1>
+{% extends "base.html" %}
 
-        <nav>
-            <a href="{% url 'browse_items' %}">Browse Items</a> |
+{% block title %}Dashboard | FindIt{% endblock %}
 
-            <a href="{% url 'create_item_report' %}">Report an Item</a> |
+{% block content %}
 
-            <a href="{% url 'my_item_reports' %}">My Reports</a> |
+<section class="welcome-section">
+    <div>
+        <span class="badge">KCA UNIVERSITY COMMUNITY</span>
+        <h1>Welcome to FindIt, {{ user.username }}.</h1>
+        <p class="muted">
+            Your university lost-and-found platform. Find what is missing
+            or help someone reconnect with their belongings.
+        </p>
+    </div>
+</section>
 
-            <a href="{% url 'profile' %}">My Profile</a> |
+<section class="dashboard-grid">
 
-            <a href="{% url 'password_change' %}">Change Password</a>
-        </nav>
-    </header>
+    <a href="{% url 'browse_items' %}" class="dashboard-card">
+        <div class="dashboard-icon">⌕</div>
+        <h2>Browse Items</h2>
+        <p>Explore lost and found reports submitted by the university community.</p>
+        <span class="card-link">Explore reports →</span>
+    </a>
 
-    <main>
+    <a href="{% url 'create_item_report' %}" class="dashboard-card">
+        <div class="dashboard-icon gold-icon">＋</div>
+        <h2>Report an Item</h2>
+        <p>Report something you've lost or an item you've found.</p>
+        <span class="card-link">Create a report →</span>
+    </a>
 
-        <h2>Welcome to FindIt, {{ user.username }}!</h2>
+    <a href="{% url 'my_item_reports' %}" class="dashboard-card">
+        <div class="dashboard-icon">▤</div>
+        <h2>My Reports</h2>
+        <p>Keep track of the items you've reported.</p>
+        <span class="card-link">View your reports →</span>
+    </a>
 
-        <p>You are successfully logged in.</p>
+    <a href="{% url 'profile' %}" class="dashboard-card">
+        <div class="dashboard-icon gold-icon">◎</div>
+        <h2>My Profile</h2>
+        <p>View and manage your account information.</p>
+        <span class="card-link">View profile →</span>
+    </a>
 
-        <p>Your lost-and-found journey starts here.</p>
+</section>
 
-    </main>
+<section class="dashboard-note">
+    <div class="note-accent"></div>
+    <div>
+        <h3>Lost something on campus?</h3>
+        <p>
+            Check the found-item reports regularly. If you recognise
+            your belongings, open the report and submit a claim.
+        </p>
+    </div>
+</section>
 
-    <form method="POST" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Log Out</button>
-    </form>
-
-</body>
-</html>
+{% endblock %}

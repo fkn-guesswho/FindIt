@@ -1,27 +1,80 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | FindIt</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <h1>Create a FindIt Account</h1>
-    <p>Join FindIt to report and recover lost items.</p>
+{% block title %}Register | FindIt{% endblock %}
 
-    <form method="POST">
-        {% csrf_token %}
+{% block content %}
 
-        {{ form.as_p }}
+<div class="auth-page register-page">
 
-        <button type="submit">Create Account</button>
-    </form>
+    <div class="auth-card">
 
-    <p>Already have an account?
-        <a href="{% url 'login' %}">Log in</a>
-    </p>
+        <div class="auth-header">
+            <span class="section-label">KCA UNIVERSITY</span>
+            <h1>Create Your Account</h1>
+            <p>Join FindIt to report and recover lost items.</p>
+        </div>
 
-</body>
-</html>
+        <div class="registration-notice">
+            <strong>KCA Community Registration</strong>
+            <p>
+                Registration requires an official KCA University
+                email address.
+            </p>
+        </div>
+
+        <form method="POST" class="findit-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="auth-error">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+
+                        {% if field.field.required %}
+                            <span class="required-mark">*</span>
+                        {% endif %}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small class="field-help">
+                            {{ field.help_text }}
+                        </small>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="form-errors">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="button button-primary auth-submit">
+                Create Account
+            </button>
+
+        </form>
+
+        <div class="auth-footer">
+            <p>
+                Already have an account?
+                <a href="{% url 'login' %}">Log in</a>
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

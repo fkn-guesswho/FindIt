@@ -1,0 +1,69 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FindIt | KCA University{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <header class="site-header">
+        <div class="header-inner">
+            <a class="brand" href="{% url 'dashboard' %}">
+                <span class="brand-mark">F</span>
+                <span>
+                    <strong>FindIt</strong>
+                    <small>KCA University · Lost & Found</small>
+                </span>
+            </a>
+
+            <nav class="main-nav">
+                <a href="{% url 'browse_items' %}">Browse Items</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'create_item_report' %}">Report an Item</a>
+                    <a href="{% url 'my_item_reports' %}">My Reports</a>
+                    <a href="{% url 'profile' %}">My Profile</a>
+                {% endif %}
+            </nav>
+
+            <div class="header-actions">
+                {% if user.is_authenticated %}
+                    <a class="nav-account" href="{% url 'profile' %}">
+                        {{ user.username }}
+                    </a>
+                    <form method="POST" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="button button-outline button-small" type="submit">
+                            Log out
+                        </button>
+                    </form>
+                {% else %}
+                    <a class="button button-outline button-small" href="{% url 'login' %}">
+                        Log in
+                    </a>
+                    <a class="button button-primary button-small" href="{% url 'register' %}">
+                        Register
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <main class="page-container">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <span><strong>FindIt</strong> · KCA University</span>
+            <span>Helping the university community reconnect with what matters.</span>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

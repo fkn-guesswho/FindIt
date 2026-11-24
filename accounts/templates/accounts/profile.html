@@ -1,31 +1,87 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile | FindIt</title>
-</head>
-<body>
 
-    <h1>My Profile</h1>
+{% extends "base.html" %}
 
-    <p>Update your account information.</p>
+{% block title %}My Profile | FindIt{% endblock %}
 
-    <form method="POST">
-        {% csrf_token %}
+{% block content %}
 
-        {{ form.as_p }}
+<div class="profile-page">
 
-        <button type="submit">Save Changes</button>
-    </form>
+    <div class="page-heading">
+        <span class="section-label">YOUR ACCOUNT</span>
+        <h1>My Profile</h1>
+        <p>Update your account information and manage your account security.</p>
+    </div>
 
-    <p>
-        <a href="{% url 'dashboard' %}">Back to Dashboard</a>
-    </p>
+    <div class="profile-card">
 
-    <p>
-        <a href="{% url 'password_change' %}">Change Password</a>
-    </p>
+        <div class="profile-card-header">
+            <h2>Account Information</h2>
+            <p>Keep your personal and account details up to date.</p>
+        </div>
 
-</body>
-</html>
+        <form method="POST" class="findit-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+
+                        {% if field.field.required %}
+                            <span class="required-mark">*</span>
+                        {% endif %}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small class="field-help">{{ field.help_text }}</small>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="form-errors">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+            <div class="profile-form-actions">
+                <button type="submit" class="button button-primary">
+                    Save Changes
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+    <div class="profile-security-card">
+        <div>
+            <h2>Account Security</h2>
+            <p>Keep your account secure by updating your password regularly.</p>
+        </div>
+
+        <a href="{% url 'password_change' %}" class="button button-secondary">
+            Change Password
+        </a>
+    </div>
+
+    <div class="profile-back-link">
+        <a href="{% url 'dashboard' %}" class="back-link">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+</div>
+
+{% endblock %}
