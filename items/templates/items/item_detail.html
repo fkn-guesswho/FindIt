@@ -1,100 +1,316 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "base.html" %}
+{% load static %}
 
-    <title>{{ item.title }} | FindIt</title>
+{% block title %}{{ item.title }} | FindIt{% endblock %}
 
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'css/item_detail.css' %}">
-</head>
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/item_detail.css' %}">
+{% endblock %}
 
-<body>
+{% block content %}
 
-    <h1>{{ item.title }}</h1>
+<!-- MESSAGES -->
 
-    <div class="item-carousel">
+{% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="message-item {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
 
-        {% if item.image or item.additional_images.exists %}
 
-            <div class="carousel-container">
+<!-- BACK NAVIGATION -->
 
-                {% if item.image %}
-                    <div class="carousel-slide active">
-                        <img src="{{ item.image.url }}"
-                             alt="{{ item.title }}">
-                    </div>
-                {% endif %}
+<div class="detail-navigation">
+    <a href="{% url 'browse_items' %}" class="back-link">
+        ← Back to Browse Items
+    </a>
+</div>
 
-                {% for extra_image in item.additional_images.all %}
-                    <div class="carousel-slide {% if not item.image and forloop.first %}active{% endif %}">
-                        <img src="{{ extra_image.image.url }}"
-                             alt="Additional photo of {{ item.title }}">
-                    </div>
-                {% endfor %}
 
-                {% if item.image or item.additional_images.count > 1 %}
-                    <button type="button"
-                            class="carousel-btn prev"
-                            onclick="changeSlide(-1)">
-                        &#10094;
-                    </button>
+<!-- ITEM DETAILS -->
 
-                    <button type="button"
-                            class="carousel-btn next"
-                            onclick="changeSlide(1)">
-                        &#10095;
-                    </button>
-                {% endif %}
+<section class="detail-container">
+
+    {% if item.contains_sensitive_info and not is_owner_or_admin %}
+
+        <!-- PROTECTED SENSITIVE ITEM VIEW -->
+
+        <div class="sensitive-detail">
+
+            <span class="badge">PROTECTED LISTING</span>
+
+            <h1>{{ item.title }}</h1>
+
+            <div class="sensitive-warning">
+                <strong>Protected information</strong>
+                <p>
+                    This listing contains sensitive information.
+                    Personal details and original photographs are protected.
+                </p>
+            </div>
+
+            <div class="detail-information">
+
+                <div class="detail-information-item">
+                    <span class="detail-label">Report type</span>
+                    <strong>{{ item.get_report_type_display }}</strong>
+                </div>
+
+                <div class="detail-information-item">
+                    <span class="detail-label">Category</span>
+                    <strong>
+                        {% if item.category == 'STUDENT_ID' %}
+                            Student ID
+                        {% elif item.category == 'IDENTITY_DOCUMENT' %}
+                            Identity document
+                        {% else %}
+                            Sensitive item
+                        {% endif %}
+                    </strong>
+                </div>
+
+                <div class="detail-information-item">
+                    <span class="detail-label">Campus</span>
+                    <strong>{{ item.campus }}</strong>
+                </div>
+
+                <div class="detail-information-item">
+                    <span class="detail-label">Date reported</span>
+                    <strong>{{ item.created_at|date:"d M Y" }}</strong>
+                </div>
 
             </div>
 
-            <p class="carousel-counter">
-                <span id="current-slide">1</span> /
-                <span id="total-slides"></span>
+            <div class="claim-information">
+                <h3>Think this item belongs to you?</h3>
+                <p>
+                    You can submit a claim and provide private ownership
+                    evidence for verification.
+                </p>
+            </div>
+
+        </div>
+
+
+    {% else %}
+
+        <!-- NORMAL ITEM VIEW -->
+
+        <div class="detail-header">
+
+            <div>
+                <span class="badge
+                    {% if item.report_type == 'LOST' %}
+                        lost-badge
+                    {% else %}
+                        found-badge
+                    {% endif %}">
+                    {{ item.get_report_type_display }}
+                </span>
+
+                <h1>{{ item.title }}</h1>
+            </div>
+
+            <span class="status-badge
+                {% if item.status == 'OPEN' %}
+                    status-open
+                {% elif item.status == 'RESOLVED' %}
+                    status-resolved
+                {% elif item.status == 'CLOSED' %}
+                    status-closed
+                {% endif %}">
+                {{ item.get_status_display }}
+            </span>
+
+        </div>
+
+
+        <!-- IMAGE CAROUSEL -->
+
+        <section class="detail-gallery">
+
+            {% if item.image or item.additional_images.exists %}
+
+                <div class="item-carousel">
+
+                    <div class="carousel-container">
+
+                        {% if item.image %}
+                            <div class="carousel-slide active">
+                                <img
+                                    src="{% url 'view_item_image' item.id %}"
+                                    alt="{{ item.title }}"
+                                >
+                            </div>
+                        {% endif %}
+
+                        {% for extra_image in item.additional_images.all %}
+                            <div class="carousel-slide {% if not item.image and forloop.first %}active{% endif %}">
+                                <img
+                                    src="{% url 'view_additional_item_image' extra_image.id %}"
+                                    alt="Additional photo of {{ item.title }}"
+                                >
+                            </div>
+                        {% endfor %}
+
+                        {% if item.image or item.additional_images.count > 1 %}
+
+                            <button
+                                type="button"
+                                class="carousel-btn prev"
+                                onclick="changeSlide(-1)"
+                                aria-label="Previous image"
+                            >
+                                &#10094;
+                            </button>
+
+                            <button
+                                type="button"
+                                class="carousel-btn next"
+                                onclick="changeSlide(1)"
+                                aria-label="Next image"
+                            >
+                                &#10095;
+                            </button>
+
+                        {% endif %}
+
+                    </div>
+
+                    <p class="carousel-counter">
+                        <span id="current-slide">1</span> /
+                        <span id="total-slides"></span>
+                    </p>
+
+                </div>
+
+            {% else %}
+
+                <div class="no-images">
+                    <span>No images available for this item.</span>
+                </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <!-- DESCRIPTION -->
+
+        <section class="detail-section">
+
+            <h2>Item Description</h2>
+
+            <p class="detail-description">
+                {{ item.description }}
             </p>
 
-        {% else %}
-            <p>No images available for this item.</p>
-        {% endif %}
+        </section>
 
-    </div>
 
-    <p><strong>Report type:</strong>
-        {{ item.get_report_type_display }}
-    </p>
+        <!-- ITEM INFORMATION -->
 
-    <p><strong>Category:</strong>
-        {{ item.get_category_display }}
-    </p>
+        <section class="detail-section">
 
-    <h3>Description</h3>
-    <p>{{ item.description }}</p>
+            <h2>Item Information</h2>
 
-    <h3>Location</h3>
-    <p>Campus: {{ item.campus }}</p>
-    <p>Building: {{ item.building }}</p>
-    <p>Specific location: {{ item.specific_location }}</p>
+            <div class="detail-information">
 
-    <p><strong>Date occurred:</strong> {{ item.date_occurred }}</p>
-    <p><strong>Report submitted:</strong> {{ item.created_at }}</p>
+                <div class="detail-information-item">
+                    <span class="detail-label">Category</span>
+                    <strong>{{ item.get_category_display }}</strong>
+                </div>
 
-    <p><strong>Status:</strong> {{ item.get_status_display }}</p>
+                <div class="detail-information-item">
+                    <span class="detail-label">Date occurred</span>
+                    <strong>{{ item.date_occurred }}</strong>
+                </div>
 
-    {% if can_claim %}
-        <hr>
-        <a href="{% url 'submit_claim' item.id %}">
-            Claim This Item
-        </a>
+                <div class="detail-information-item">
+                    <span class="detail-label">Campus</span>
+                    <strong>{{ item.campus }}</strong>
+                </div>
+
+                <div class="detail-information-item">
+                    <span class="detail-label">Building</span>
+                    <strong>{{ item.building|default:"Not specified" }}</strong>
+                </div>
+
+                <div class="detail-information-item">
+                    <span class="detail-label">Specific location</span>
+                    <strong>{{ item.specific_location|default:"Not specified" }}</strong>
+                </div>
+
+                <div class="detail-information-item">
+                    <span class="detail-label">Report submitted</span>
+                    <strong>{{ item.created_at|date:"d M Y, H:i" }}</strong>
+                </div>
+
+            </div>
+
+        </section>
+
     {% endif %}
 
-    <hr>
 
-    <a href="{% url 'browse_items' %}">← Back to Browse Items</a>
+    <!-- CLAIM STATUS AND ACTION -->
 
-    <script src="{% static 'js/item_detail.js' %}"></script>
+    {% if existing_claim %}
 
-</body>
-</html>
+        <section class="claim-status-section">
+
+            <h2>Your Claim</h2>
+
+            {% if existing_claim.status == 'PENDING' %}
+
+                <div class="claim-status pending-claim">
+                    Your claim is awaiting admin review.
+                </div>
+
+            {% elif existing_claim.status == 'APPROVED' %}
+
+                <div class="claim-status approved-claim">
+                    Your claim has been approved.
+                    Please await the handover process.
+                </div>
+
+            {% endif %}
+
+        </section>
+
+    {% elif can_claim %}
+
+        <section class="claim-action-section">
+
+            <div>
+                <h2>Is this your item?</h2>
+                <p>
+                    Submit a claim and provide information
+                    to help verify your ownership.
+                </p>
+            </div>
+
+            <a
+                href="{% url 'submit_claim' item.id %}"
+                class="button button-primary"
+            >
+                Claim This Item
+            </a>
+
+        </section>
+
+    {% endif %}
+
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{% static 'js/item_detail.js' %}"></script>
+{% endblock %}

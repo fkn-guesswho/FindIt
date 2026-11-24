@@ -1,0 +1,60 @@
+
+{% extends "base.html" %}
+
+{% block title %}Request Report Closure | FindIt{% endblock %}
+
+{% block content %}
+<div class="closure-page">
+
+    <div class="page-heading">
+        <h1>Request Report Closure</h1>
+        <p>Submit a request to close one of your reported items.</p>
+    </div>
+
+    <div class="closure-card">
+
+        <div class="closure-item-summary">
+            <span class="section-label">Report being closed</span>
+
+            <h2>{{ item.title }}</h2>
+
+            <div class="closure-meta">
+                <p>
+                    <strong>Report type:</strong>
+                    {{ item.get_report_type_display }}
+                </p>
+
+                <p>
+                    <strong>Current status:</strong>
+                    {{ item.get_status_display }}
+                </p>
+            </div>
+        </div>
+
+        <div class="closure-instructions">
+            <h3>Why are you closing this report?</h3>
+            <p>
+                Explain why this report should be closed. An administrator
+                will review your request before any changes are made.
+            </p>
+        </div>
+
+        <form method="POST" class="closure-form">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+           <div class="closure-actions">
+    <button type="submit" class="button button-primary">
+        Submit Closure Request
+    </button>
+
+    <a href="{% url 'my_item_reports' %}" class="button button-outline">
+        Cancel
+    </a>
+</div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

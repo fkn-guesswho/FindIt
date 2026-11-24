@@ -1,22 +1,89 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Report an Item | FindIt</title>
-</head>
-<body>
 
+{% extends "base.html" %}
+
+{% block title %}Report an Item | FindIt{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <span class="badge">KCA UNIVERSITY</span>
     <h1>Report a Lost or Found Item</h1>
+    <p>
+        Provide accurate details to help the university community
+        identify and recover missing belongings.
+    </p>
+</section>
 
-    <form method="POST" enctype="multipart/form-data">
+<section class="form-container">
+
+    <div class="form-intro">
+        <h2>Item Information</h2>
+        <p>Fields marked as required must be completed.</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="findit-form">
+
         {% csrf_token %}
 
-        {{ form.as_p }}
+        {% if form.non_field_errors %}
+            <div class="form-errors">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
 
-        <button type="submit">Submit Report</button>
+        {% for field in form %}
+
+            <div class="form-group">
+
+                <label for="{{ field.id_for_label }}">
+                    {{ field.label }}
+
+                    {% if field.field.required %}
+                        <span class="required-mark">*</span>
+                    {% endif %}
+                </label>
+
+                {% if field.help_text %}
+                    <small class="field-help">
+                        {{ field.help_text }}
+                    </small>
+                {% endif %}
+
+                {{ field }}
+
+                {% if field.errors %}
+                    <div class="field-errors">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+        <div class="form-notice">
+            <strong>Before submitting</strong>
+            <p>
+                Make sure your description is accurate. Avoid including
+                personal identification numbers or other private information
+                in public descriptions.
+            </p>
+        </div>
+
+        <div class="form-actions">
+
+            <button type="submit" class="button button-primary">
+                Submit Report
+            </button>
+
+            <a href="{% url 'my_item_reports' %}" class="cancel-link">
+                Cancel
+            </a>
+
+        </div>
+
     </form>
 
-    <p><a href="{% url 'my_item_reports' %}">My Reports</a></p>
+</section>
 
-</body>
-</html>
+{% endblock %}

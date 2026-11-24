@@ -1,144 +1,189 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Browse Items | FindIt</title>
+{% extends "base.html" %}
 
-    <style>
-        .item-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 20px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
+{% block title %}Browse Items | FindIt{% endblock %}
 
-        .item-info {
-            flex: 1;
-            min-width: 0;
-        }
+{% block content %}
 
-        .item-preview {
-            width: 130px;
-            height: 110px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-    </style>
-</head>
-<body>
+<section class="page-heading">
+    <span class="badge">KCA UNIVERSITY</span>
+    <h1>Browse Lost & Found Items</h1>
+    <p>Explore reports submitted by the university community.</p>
+</section>
 
-    <h1>FindIt - Browse Lost and Found Items</h1>
+<section class="search-panel">
+    <form method="GET" class="search-form">
 
-    <p>Browse reports submitted by the university community.</p>
+        <div class="search-field search-keyword">
+            <label for="search-query">Search items</label>
+            <input
+                id="search-query"
+                type="text"
+                name="q"
+                placeholder="e.g. black backpack, calculator..."
+                value="{{ search_query }}"
+            >
+        </div>
 
-    <form method="GET">
-
-        <input
-            type="text"
-            name="q"
-            placeholder="Search for an item..."
-            value="{{ search_query }}"
-        >
-
-        <select name="type">
-            <option value="">All Reports</option>
-
-            <option value="LOST"
-                {% if selected_type == 'LOST' %}selected{% endif %}>
-                Lost Items
-            </option>
-
-            <option value="FOUND"
-                {% if selected_type == 'FOUND' %}selected{% endif %}>
-                Found Items
-            </option>
-        </select>
-
-        <select name="category">
-            <option value="">All Categories</option>
-
-            {% for value, label in categories %}
-                <option value="{{ value }}"
-                    {% if selected_category == value %}selected{% endif %}>
-                    {{ label }}
+        <div class="search-field">
+            <label for="report-type">Report type</label>
+            <select id="report-type" name="type">
+                <option value="">All Reports</option>
+                <option value="LOST"
+                    {% if selected_type == 'LOST' %}selected{% endif %}>
+                    Lost Items
                 </option>
-            {% endfor %}
-        </select>
+                <option value="FOUND"
+                    {% if selected_type == 'FOUND' %}selected{% endif %}>
+                    Found Items
+                </option>
+            </select>
+        </div>
 
-        <button type="submit">Search</button>
+        <div class="search-field">
+            <label for="item-category">Category</label>
+            <select id="item-category" name="category">
+                <option value="">All Categories</option>
+                {% for value, label in categories %}
+                    <option value="{{ value }}"
+                        {% if selected_category == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
 
-        <a href="{% url 'browse_items' %}">Clear Filters</a>
+        <div class="search-actions">
+            <button class="button button-primary" type="submit">
+                Search
+            </button>
+            <a class="clear-link" href="{% url 'browse_items' %}">
+                Clear
+            </a>
+        </div>
 
     </form>
+</section>
 
-    <hr>
+<div class="results-heading">
+    <h2>Available Reports</h2>
+    <a class="button button-gold button-small"
+       href="{% url 'create_item_report' %}">
+        + Report an Item
+    </a>
+</div>
 
-    {% if items %}
+{% if items %}
+
+    <section class="items-grid">
 
         {% for item in items %}
 
-            <div class="item-card">
+            <article class="item-card">
 
-                <div class="item-info">
-
-                    <h2>
-                        <a href="{% url 'item_detail' item.id %}">
-                            {{ item.title }}
-                        </a>
-                    </h2>
-
-                    <p><strong>Report type:</strong>
-                        {{ item.get_report_type_display }}
-                    </p>
-
-                    <p><strong>Category:</strong>
-                        {{ item.get_category_display }}
-                    </p>
-
-                    <p>{{ item.description }}</p>
-
-                    <p><strong>Location:</strong>
-                        {{ item.campus }}, {{ item.building }}
-                    </p>
-
-                    <p><strong>Date:</strong> {{ item.date_occurred }}</p>
-
-                    <p><strong>Reported:</strong> {{ item.created_at }}</p>
-
-                </div>
-
-                {% if item.image %}
-                    <a href="{% url 'item_detail' item.id %}">
+                {% if item.image and not item.contains_sensitive_info %}
+                    <a href="{% url 'item_detail' item.id %}"
+                       class="item-image-link">
                         <img
-                            src="{{ item.image.url }}"
+                            src="{% url 'view_item_image' item.id %}"
                             alt="{{ item.title }}"
                             class="item-preview"
                         >
                     </a>
+                {% else %}
+                    <div class="item-image-placeholder">
+                        <span>FindIt</span>
+                    </div>
                 {% endif %}
 
-            </div>
+                <div class="item-card-content">
+
+                    <div class="item-card-top">
+                        <span class="badge
+                            {% if item.report_type == 'LOST' %}
+                                lost-badge
+                            {% else %}
+                                found-badge
+                            {% endif %}">
+                            {{ item.get_report_type_display }}
+                        </span>
+                        <span class="item-date">
+                            {{ item.created_at|date:"d M Y" }}
+                        </span>
+                    </div>
+
+                    <h3>
+                        <a href="{% url 'item_detail' item.id %}">
+                            {{ item.title }}
+                        </a>
+                    </h3>
+
+                    {% if item.contains_sensitive_info %}
+
+                        <p class="sensitive-notice">
+                            <strong>
+                                {% if item.category == 'STUDENT_ID' %}
+                                    Student ID
+                                {% elif item.category == 'IDENTITY_DOCUMENT' %}
+                                    Identity document
+                                {% else %}
+                                    Sensitive item
+                                {% endif %}
+                            </strong>
+                            <br>
+                            A sensitive item has been reported. Submit a
+                            claim with private ownership evidence if you
+                            believe it belongs to you.
+                        </p>
+
+                    {% else %}
+
+                        <p class="item-description">
+                            {{ item.description|truncatewords:22 }}
+                        </p>
+
+                        <p class="item-category">
+                            {{ item.get_category_display }}
+                        </p>
+
+                    {% endif %}
+
+                    <div class="item-card-footer">
+                        <span>
+                            {{ item.campus }}
+                            {% if not item.contains_sensitive_info %}
+                                {% if item.building %}, {{ item.building }}{% endif %}
+                            {% endif %}
+                        </span>
+
+                        <a href="{% url 'item_detail' item.id %}">
+                            View details →
+                        </a>
+                    </div>
+
+                </div>
+
+            </article>
 
         {% endfor %}
 
-    {% else %}
+    </section>
 
-        <p>No matching open reports found.</p>
+{% else %}
 
-    {% endif %}
+    <section class="empty-state">
+        <div class="empty-icon">⌕</div>
+        <h2>No matching reports found</h2>
+        <p>
+            Try changing your search or filters. If you've lost something,
+            you can submit a lost-item report.
+        </p>
+        <a class="button button-primary"
+           href="{% url 'create_item_report' %}">
+            Report a Lost Item
+        </a>
+    </section>
 
-    <p>
-        <a href="{% url 'create_item_report' %}">Report an Item</a>
-    </p>
+{% endif %}
 
-    <p>
-        <a href="{% url 'my_item_reports' %}">My Reports</a>
-    </p>
-
-</body>
-</html>
+{% endblock %}

@@ -1,33 +1,94 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Claim Item | FindIt</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-    <h1>Submit an Ownership Claim</h1>
+{% block title %}Claim Item | FindIt{% endblock %}
 
-    <h2>{{ item.title }}</h2>
+{% block content %}
 
-    <p>
-        Explain why you believe this item belongs to you.
-        Do not include passwords or other unnecessary sensitive information.
-    </p>
+<div class="claim-page">
 
-    <form method="POST">
-        {% csrf_token %}
-        {{ form.as_p }}
+    <div class="page-heading">
+        <span class="section-label">OWNERSHIP VERIFICATION</span>
+        <h1>Submit an Ownership Claim</h1>
+        <p>Provide information that can help verify that this item belongs to you.</p>
+    </div>
 
-        <button type="submit">Submit Claim</button>
-    </form>
+    <div class="claim-item-card">
+        <span class="detail-label">ITEM YOU ARE CLAIMING</span>
+        <h2>{{ item.title }}</h2>
+        <p>{{ item.get_report_type_display }}</p>
+    </div>
 
-    <p>
-        <a href="{% url 'item_detail' item.id %}">
-            Cancel and return to item
-        </a>
-    </p>
+    <div class="claim-form-card">
 
-</body>
-</html>
+        <div class="claim-form-intro">
+            <h2>Ownership Information</h2>
+            <p>
+                Explain why you believe this item belongs to you.
+                Provide relevant details that an administrator can use
+                to assess your claim.
+            </p>
+        </div>
+
+        <div class="claim-privacy-notice">
+            <strong>Keep your information safe</strong>
+            <p>
+                Do not include passwords or unnecessary sensitive
+                personal information. Any supporting photographs
+                submitted here are private and only intended for
+                ownership verification.
+            </p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="findit-form">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+                <div class="form-errors">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+
+            {% for field in form %}
+                <div class="form-group">
+
+                    <label for="{{ field.id_for_label }}">
+                        {{ field.label }}
+
+                        {% if field.field.required %}
+                            <span class="required-mark">*</span>
+                        {% endif %}
+                    </label>
+
+                    {{ field }}
+
+                    {% if field.help_text %}
+                        <small class="field-help">{{ field.help_text }}</small>
+                    {% endif %}
+
+                    {% if field.errors %}
+                        <div class="form-errors">
+                            {{ field.errors }}
+                        </div>
+                    {% endif %}
+
+                </div>
+            {% endfor %}
+
+            <div class="claim-form-actions">
+                <button type="submit" class="button button-primary">
+                    Submit Claim
+                </button>
+
+                <a href="{% url 'item_detail' item.id %}" class="button button-secondary">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+{% endblock %}

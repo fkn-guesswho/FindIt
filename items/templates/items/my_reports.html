@@ -1,42 +1,205 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Reports | FindIt</title>
-</head>
-<body>
 
+{% extends "base.html" %}
+
+{% block title %}My Reports | FindIt{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <span class="badge">YOUR ACCOUNT</span>
     <h1>My Item Reports</h1>
-    <p>
-      <a href="{% url 'browse_items' %}">
-           ← Back to Browse Items
-      </a>
-    </p>
+    <p>Track your submitted reports and manage their closure requests.</p>
+</section>
 
-    <a href="{% url 'create_item_report' %}">
-        Report Another Item
+<div class="reports-actions">
+    <a href="{% url 'browse_items' %}" class="back-link">
+        ← Back to Browse Items
     </a>
 
-    {% if items %}
+    <a href="{% url 'create_item_report' %}" class="button button-gold">
+        + Report Another Item
+    </a>
+</div>
+
+
+{% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="message-item">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+
+{% if items %}
+
+    <section class="my-reports-list">
 
         {% for item in items %}
-            <div>
-                <h2>{{ item.title }}</h2>
 
-                <p>{{ item.get_report_type_display }}</p>
-                <p>{{ item.get_category_display }}</p>
-                <p>{{ item.description }}</p>
-                <p>Location: {{ item.campus }}, {{ item.building }}, {{ item.specific_location }}</p>
-                <p>Date: {{ item.date_occurred }}</p>
-                <p>Status: {{ item.get_status_display }}</p>
-                <p>Reported: {{ item.created_at }}</p>
-            </div>
-            <hr>
+            <article class="report-card">
+
+                <div class="report-card-header">
+
+                    <div>
+                        <span class="badge
+                            {% if item.report_type == 'LOST' %}
+                                lost-badge
+                            {% else %}
+                                found-badge
+                            {% endif %}">
+                            {{ item.get_report_type_display }}
+                        </span>
+
+                        <h2>{{ item.title }}</h2>
+                    </div>
+
+                    <span class="status-badge
+                        {% if item.status == 'OPEN' %}
+                            status-open
+                        {% elif item.status == 'RESOLVED' %}
+                            status-resolved
+                        {% elif item.status == 'CLOSED' %}
+                            status-closed
+                        {% endif %}">
+                        {{ item.get_status_display }}
+                    </span>
+
+                </div>
+
+
+                <div class="report-details">
+
+                    <div class="report-detail">
+                        <span class="detail-label">Category</span>
+                        <span>{{ item.get_category_display }}</span>
+                    </div>
+
+                    <div class="report-detail">
+                        <span class="detail-label">Date occurred</span>
+                        <span>{{ item.date_occurred }}</span>
+                    </div>
+
+                    <div class="report-detail">
+                        <span class="detail-label">Reported on</span>
+                        <span>{{ item.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+
+                    <div class="report-detail">
+                        <span class="detail-label">Location</span>
+                        <span>
+                            {{ item.campus }}
+                            {% if item.building %}, {{ item.building }}{% endif %}
+                            {% if item.specific_location %}, {{ item.specific_location }}{% endif %}
+                        </span>
+                    </div>
+
+                </div>
+
+
+                <div class="report-description">
+                    <h3>Description</h3>
+                    <p>{{ item.description }}</p>
+                </div>
+
+
+                {% if item.status == 'OPEN' %}
+
+                    <div class="closure-section">
+
+                        {% if item.has_pending_closure_request %}
+
+                            <p class="closure-pending">
+                                Closure request: Pending admin review
+                            </p>
+
+                        {% else %}
+
+                            <a
+                                href="{% url 'request_item_closure' item.id %}"
+                                class="button button-outline"
+                            >
+                                Request Closure
+                            </a>
+
+                        {% endif %}
+
+                    </div>
+
+                {% elif item.status == 'CLOSED' %}
+
+                    <div class="closure-section closure-closed">
+
+                        <h3>Report Closed</h3>
+
+                        <p>
+                            <strong>Closure reason:</strong>
+                            {{ item.closure_reason }}
+                        </p>
+
+                        <p>
+                            <strong>Closed at:</strong>
+                            {{ item.closed_at|date:"d M Y, H:i" }}
+                        </p>
+
+                    </div>
+
+                {% endif %}
+
+
+                {% for closure in item.closure_requests.all %}
+
+                    {% if closure.status == 'REJECTED' %}
+
+                        <div class="closure-result closure-rejected">
+                            <strong>Closure request rejected.</strong>
+
+                            {% if closure.review_notes %}
+                                <p>
+                                    <strong>Admin notes:</strong>
+                                    {{ closure.review_notes }}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                    {% elif closure.status == 'APPROVED' %}
+
+                        <div class="closure-result closure-approved">
+                            <strong>Closure request approved.</strong>
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </article>
+
         {% endfor %}
 
-    {% else %}
-        <p>You haven't submitted any reports yet.</p>
-    {% endif %}
+    </section>
 
-</body>
-</html>
+
+{% else %}
+
+    <section class="empty-state">
+
+        <div class="empty-icon">▤</div>
+
+        <h2>No reports yet</h2>
+
+        <p>
+            You haven't submitted any lost or found item reports.
+            Once you do, they'll appear here.
+        </p>
+
+        <a href="{% url 'create_item_report' %}" class="button button-primary">
+            Submit Your First Report
+        </a>
+
+    </section>
+
+{% endif %}
+
+{% endblock %}

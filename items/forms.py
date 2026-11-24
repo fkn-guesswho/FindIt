@@ -1,6 +1,6 @@
 
 from django import forms
-from .models import Item, Claim
+from .models import Item, Claim, ClosureRequest
 
 
 class MultipleImageInput(forms.ClearableFileInput):
@@ -67,7 +67,14 @@ class ItemReportForm(forms.ModelForm):
         }
 
 
+
 class ClaimForm(forms.ModelForm):
+    evidence_images = MultipleImageField(
+        required=True,
+        label="Ownership evidence (maximum 5 images)",
+        help_text="Upload up to 5 images that help verify ownership. Each image must be 5 MB or smaller."
+    )
+
     class Meta:
         model = Claim
         fields = ['explanation']
@@ -78,6 +85,21 @@ class ClaimForm(forms.ModelForm):
                 'placeholder': (
                     'Explain how you can identify or '
                     'prove ownership of this item.'
+                ),
+            }),
+        }
+
+
+class ClosureRequestForm(forms.ModelForm):
+    class Meta:
+        model = ClosureRequest
+        fields = ['reason']
+
+        widgets = {
+            'reason': forms.Textarea(attrs={
+                'rows': 5,
+                'placeholder': (
+                    'Explain why this item report should be closed.'
                 ),
             }),
         }
