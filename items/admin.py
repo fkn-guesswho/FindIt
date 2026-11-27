@@ -5,6 +5,8 @@ from django.utils import timezone
 from django.urls import reverse
 from django.utils.html import format_html
 from django.core.exceptions import ValidationError
+from .services import approve_claim
+from django.db import IntegrityError
 
 from .models import (
     Item,
@@ -13,6 +15,7 @@ from .models import (
     ItemImage,
     Handover,
     ClosureRequest,
+    MatchingConfiguration,
 )
 
 class ItemClosureActionForm(ActionForm):
@@ -192,6 +195,7 @@ class ClaimAdmin(admin.ModelAdmin):
 
     fields = (
         'item',
+        'linked_lost_report',
         'claimant',
         'explanation',
         'status',
@@ -204,36 +208,8 @@ class ClaimAdmin(admin.ModelAdmin):
     inlines = (ClaimEvidenceInline,)
 
     actions = (
-        'approve_claims',
         'reject_claims',
     )
-
-    @admin.action(description='Approve selected pending claims')
-    def approve_claims(self, request, queryset):
-        pending_claims = queryset.filter(
-            status=Claim.Status.PENDING
-        )
-
-        count = 0
-
-        for claim in pending_claims:
-            claim.status = Claim.Status.APPROVED
-            claim.reviewed_by = request.user
-            claim.reviewed_at = timezone.now()
-
-            claim.save(update_fields=[
-                'status',
-                'reviewed_by',
-                'reviewed_at',
-            ])
-
-            count += 1
-
-        self.message_user(
-            request,
-            f'{count} claim(s) approved.',
-            messages.SUCCESS,
-        )
 
     @admin.action(description='Reject selected pending claims')
     def reject_claims(self, request, queryset):
@@ -269,10 +245,28 @@ class ClaimAdmin(admin.ModelAdmin):
 
             if (
                 previous.status == Claim.Status.PENDING
-                and obj.status in [
-                    Claim.Status.APPROVED,
-                    Claim.Status.REJECTED,
-                ]
+                and obj.status == Claim.Status.APPROVED
+            ):
+                try:
+                    approve_claim(
+                        obj.pk,
+                        request.user,
+                        linked_lost_report=obj.linked_lost_report
+                    )
+
+                except ValidationError as error:
+                    raise ValidationError(str(error))
+
+                except IntegrityError:
+                    raise ValidationError(
+                        'Another claim for this item has already been approved.'
+                    )
+
+                return
+
+            if (
+                previous.status == Claim.Status.PENDING
+                and obj.status == Claim.Status.REJECTED
             ):
                 obj.reviewed_by = request.user
                 obj.reviewed_at = timezone.now()
@@ -340,17 +334,11 @@ class HandoverAdmin(admin.ModelAdmin):
     def get_claimant(self, obj):
         return obj.claim.claimant.username
 
-    def save_model(self, request, obj, form, change):
-        if not change:
-            obj.recorded_by = request.user
-
-        super().save_model(request, obj, form, change)
+    def has_add_permission(self, request):
+        return False
 
     def has_change_permission(self, request, obj=None):
-        if obj is not None:
-            return False
-
-        return super().has_change_permission(request, obj)
+        return False
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -497,3 +485,13 @@ class ClosureRequestAdmin(admin.ModelAdmin):
                 return
 
         super().save_model(request, obj, form, change)
+
+@admin.register(MatchingConfiguration)
+class MatchingConfigurationAdmin(admin.ModelAdmin):
+    list_display = ('threshold',)
+
+    def has_add_permission(self, request):
+        return not MatchingConfiguration.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False

@@ -21,15 +21,23 @@
                 </span>
             </a>
 
-            <nav class="main-nav">
-                <a href="{% url 'browse_items' %}">Browse Items</a>
-                {% if user.is_authenticated %}
-                    <a href="{% url 'create_item_report' %}">Report an Item</a>
-                    <a href="{% url 'my_item_reports' %}">My Reports</a>
-                    <a href="{% url 'profile' %}">My Profile</a>
-                {% endif %}
-            </nav>
+<nav class="main-nav">
+    <a href="{% url 'browse_items' %}">Browse Items</a>
 
+    {% if user.is_authenticated %}
+        <a href="{% url 'create_item_report' %}">Report an Item</a>
+        <a href="{% url 'my_item_reports' %}">My Reports</a>
+        <a href="{% url 'claims' %}">Claims</a>
+
+        {% if user.is_superuser or perms.items.can_confirm_custody %}
+            <a href="{% url 'custodian_queue' %}">Custodian Queue</a>
+        {% endif %}
+
+        {% if user.is_superuser %}
+            <a href="{% url 'admin_dashboard' %}">Admin</a>
+        {% endif %}
+    {% endif %}
+</nav>
             <div class="header-actions">
                 {% if user.is_authenticated %}
                     <a class="nav-account" href="{% url 'profile' %}">

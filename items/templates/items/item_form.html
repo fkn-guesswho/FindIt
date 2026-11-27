@@ -33,7 +33,10 @@
 
         {% for field in form %}
 
-            <div class="form-group">
+            <div class="form-group
+                {% if field.name == 'private_identifying_details' or field.name == 'current_holding_location' %}
+                    found-only-field
+                {% endif %}">
 
                 <label for="{{ field.id_for_label }}">
                     {{ field.label }}
@@ -85,5 +88,32 @@
     </form>
 
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const reportType = document.getElementById('id_report_type');
+    const foundOnlyFields = document.querySelectorAll('.found-only-field');
+
+    function toggleFoundFields() {
+        const isFound = reportType.value === 'FOUND';
+
+        foundOnlyFields.forEach(function (field) {
+            field.style.display = isFound ? '' : 'none';
+
+            if (!isFound) {
+                const input = field.querySelector('input, textarea');
+                if (input) {
+                    input.value = '';
+                }
+            }
+        });
+    }
+
+    if (reportType) {
+        reportType.addEventListener('change', toggleFoundFields);
+        toggleFoundFields();
+    }
+});
+</script>
 
 {% endblock %}

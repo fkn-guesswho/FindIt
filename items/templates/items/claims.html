@@ -1,0 +1,146 @@
+ {% extends 'base.html' %}
+
+{% block title %}Claims | FindIt{% endblock %}
+
+{% block content %}
+<div class="claims-page">
+
+    <div class="page-heading">
+        <span class="section-label">CLAIM MANAGEMENT</span>
+        <h1>Claims</h1>
+        <p>Track submitted claims and manage approved item collections.</p>
+    </div>
+
+    {% if user_claims is not None %}
+    <section class="claims-section">
+        <div class="claims-section-heading">
+            <div>
+                <h2>Your Submitted Claims</h2>
+                <p>Keep track of the claims you've submitted.</p>
+            </div>
+        </div>
+
+        <div class="claims-list">
+            {% for claim in user_claims %}
+            <article class="claim-record-card">
+
+                <div class="claim-record-header">
+                    <div>
+                        <span class="section-label">CLAIM #{{ claim.id }}</span>
+                        <h3>{{ claim.item.title }}</h3>
+                        <span class="claim-item-reference">
+                            {{ claim.item.reference_number }}
+                        </span>
+                    </div>
+
+                    {% if claim.status == 'PENDING' %}
+                        <span class="status-badge status-pending">Pending Review</span>
+                    {% elif claim.status == 'APPROVED' %}
+                        <span class="status-badge status-approved">Approved</span>
+                    {% elif claim.status == 'REJECTED' %}
+                        <span class="status-badge status-rejected">Rejected</span>
+                    {% endif %}
+                </div>
+
+                <div class="claim-record-details">
+                    <div class="claim-record-detail">
+                        <span class="detail-label">Submitted</span>
+                        <strong>{{ claim.created_at|date:"d M Y, H:i" }}</strong>
+                    </div>
+
+                    {% if claim.status == 'APPROVED' %}
+                    <div class="claim-record-detail">
+                        <span class="detail-label">Collection status</span>
+                        {% if claim.handover %}
+                            <strong class="claim-completed">Handover completed</strong>
+                        {% else %}
+                            <strong class="claim-awaiting">Awaiting collection</strong>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+            </article>
+            {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">◇</div>
+                    <h2>No claims yet</h2>
+                    <p>Claims you submit for found items will appear here.</p>
+                    <a href="{% url 'browse_items' %}" class="button button-primary">
+                        Browse Items
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+
+    {% if is_custodian %}
+    <section class="claims-section">
+        <div class="claims-section-heading">
+            <div>
+                <h2>Awaiting Handover</h2>
+                <p>Approved claims that are ready for physical collection.</p>
+            </div>
+
+            <span class="claims-count">{{ pending_handovers|length }}</span>
+        </div>
+
+        <div class="claims-list">
+            {% for claim in pending_handovers %}
+            <article class="claim-record-card handover-record-card">
+
+                <div class="claim-record-header">
+                    <div>
+                        <span class="section-label">CLAIM #{{ claim.id }}</span>
+                        <h3>{{ claim.item.title }}</h3>
+                        <span class="claim-item-reference">
+                            {{ claim.item.reference_number }}
+                        </span>
+                    </div>
+
+                    <span class="status-badge status-approved">Approved</span>
+                </div>
+
+                <div class="claim-record-details">
+                    <div class="claim-record-detail">
+                        <span class="detail-label">Claimant</span>
+                        <strong>{{ claim.claimant.username }}</strong>
+                    </div>
+
+                    <div class="claim-record-detail">
+                        <span class="detail-label">Claimant email</span>
+                        <strong>{{ claim.claimant.email }}</strong>
+                    </div>
+                </div>
+
+                <div class="claim-record-actions">
+                    <a href="{% url 'record_handover' claim.id %}"
+                       class="button button-primary">
+                        Record Handover
+                    </a>
+                          <form method="post"
+                                action="{% url 'regenerate_claim_pickup_code' claim.id %}"
+                                onsubmit="return confirm('Generate a new pickup code? The current code will stop working.');">
+                              {% csrf_token %}
+                              <button type="submit" class="button button-primary">
+                                  Regenerate Pickup Code
+                              </button>
+                          </form>
+                </div>
+
+            </article>
+            {% empty %}
+                <div class="empty-state">
+                    <div class="empty-icon">✓</div>
+                    <h2>All caught up</h2>
+                    <p>There are currently no approved claims awaiting handover.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Confirm Item Custody | FindIt{% endblock %}
+
+{% block content %}
+<div class="closure-page">
+
+    <div class="page-heading">
+        <h1>Confirm Item Custody</h1>
+        <p>Record the physical receipt and storage location of a found item.</p>
+    </div>
+
+    <div class="closure-card">
+
+        <div class="closure-item-summary">
+            <span class="section-label">Item received</span>
+
+            <h2>{{ item.title }}</h2>
+
+                 <p class="item-reference">
+                     Reference Number: <strong>{{ item.reference_number }}</strong>
+                 </p>
+
+            <div class="closure-meta">
+                <p>
+                    <strong>Report type:</strong>
+                    {{ item.get_report_type_display }}
+                </p>
+
+                <p>
+                    <strong>Reported by:</strong>
+                    {{ item.reported_by.username }}
+                </p>
+
+                    <p>
+                       <strong>Previously held at:</strong>
+                       {{ item.current_holding_location|default:"Not specified" }}
+                    </p>
+
+                <p>
+                    <strong>Report date:</strong>
+                    {{ item.created_at|date:"d M Y, H:i" }}
+                </p>
+            </div>
+        </div>
+
+        <div class="closure-instructions">
+            <h3>Confirm physical receipt</h3>
+            <p>
+                Only confirm custody after physically receiving the item.
+                Record its current storage location accurately. This
+                confirmation will make the found item eligible for public
+                browsing, subject to its existing privacy restrictions.
+            </p>
+        </div>
+
+        <form method="POST" class="closure-form">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+
+            <div class="closure-actions">
+                <button type="submit" class="button button-primary">
+                    Confirm Custody
+                </button>
+
+                <a href="{% url 'browse_items' %}" class="button button-outline">
+                    Cancel
+                </a>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}

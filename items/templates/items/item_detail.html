@@ -45,6 +45,9 @@
             <span class="badge">PROTECTED LISTING</span>
 
             <h1>{{ item.title }}</h1>
+                 <p class="item-reference">
+                       Reference Number: <strong>{{ item.reference_number }}</strong>
+                 </p>
 
             <div class="sensitive-warning">
                 <strong>Protected information</strong>
@@ -114,6 +117,9 @@
                 </span>
 
                 <h1>{{ item.title }}</h1>
+                     <p class="item-reference">
+                           Reference Number: <strong>{{ item.reference_number }}</strong>
+                    </p>
             </div>
 
             <span class="status-badge
@@ -257,6 +263,51 @@
 
     {% endif %}
 
+    <!-- POSSIBLE MATCHES -->
+
+{% if matching_items and not item.contains_sensitive_info %}
+<section class="matching-items-section">
+    {% if item.report_type == 'LOST' %}
+        <h2>Possible Found Items</h2>
+        <p>These found reports may match your lost item. Review the details and submit a claim if you believe one is yours.</p>
+    {% else %}
+        <h2>Possible Lost Item Reports</h2>
+        <p>These lost reports may be associated with this found item.</p>
+    {% endif %}
+
+    <div class="matching-items-list">
+        {% for match in matching_items %}
+            {% with suggested_item=match.suggested_item %}
+                {% if not suggested_item.contains_sensitive_info %}
+                    <article class="matching-item-card">
+                        <h3>{{ suggested_item.title }}</h3>
+                        <p><strong>Category:</strong> {{ suggested_item.category }}</p>
+                        <p><strong>Description:</strong> {{ suggested_item.description }}</p>
+                        <p><strong>Similarity score:</strong> {{ match.similarity_score|floatformat:2 }}</p>
+
+                        <a href="{% url 'item_detail' suggested_item.id %}">View Item Details</a>
+
+{% if item.report_type == 'LOST' and is_owner and suggested_item.report_type == 'FOUND' %}
+    <a href="{% url 'submit_claim' suggested_item.id %}" class="button button-primary">
+        Claim This Item
+    </a>
+{% endif %}
+
+                        {% if item.report_type == 'LOST' and is_owner %}
+                            <form method="post" action="{% url 'dismiss_match' item.id match.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="button button-outline button-small">
+                                    Dismiss Suggestion
+                                </button>
+                            </form>
+                        {% endif %}
+                    </article>
+                {% endif %}
+            {% endwith %}
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
 
     <!-- CLAIM STATUS AND ACTION -->
 

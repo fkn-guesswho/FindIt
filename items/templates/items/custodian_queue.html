@@ -1,0 +1,118 @@
+
+{% extends "base.html" %}
+
+{% block title %}Custodian Queue | FindIt{% endblock %}
+
+{% block content %}
+
+<section class="page-heading">
+    <span class="badge">CUSTODIAN WORKSPACE</span>
+    <h1>Custodian Queue</h1>
+    <p>
+        Review found-item reports awaiting physical receipt confirmation.
+        Confirm custody once the item has been received.
+    </p>
+</section>
+
+<div class="reports-actions">
+    <a href="{% url 'dashboard' %}" class="back-link">
+        &larr; Back to Dashboard
+    </a>
+</div>
+
+{% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+            <div class="message-item">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if pending_custody_items %}
+
+    <section class="my-reports-list">
+
+        <div class="page-heading">
+            <h2>Pending Custody Confirmations</h2>
+            <p>
+                {{ pending_custody_items|length }}
+                report{{ pending_custody_items|length|pluralize }}
+                awaiting confirmation.
+            </p>
+        </div>
+
+        {% for item in pending_custody_items %}
+
+            <article class="report-card">
+
+                <div>
+    <span class="badge found-badge">FOUND</span>
+    <h2>{{ item.title }}</h2>
+
+    <p class="item-reference">
+        Reference Number: <strong>{{ item.reference_number }}</strong>
+    </p>
+</div>
+
+                    <span class="status-badge status-open">
+                        Awaiting custody
+                    </span>
+                </div>
+
+                <div class="report-details">
+
+                    <div class="report-detail">
+                        <span class="detail-label">Reported by</span>
+                        <span>{{ item.reported_by.username }}</span>
+                    </div>
+
+                    <div class="report-detail">
+                        <span class="detail-label">Reported on</span>
+                        <span>{{ item.created_at|date:"d M Y, H:i" }}</span>
+                    </div>
+
+                    <div class="report-detail">
+                        <span class="detail-label">Location</span>
+                        <span>
+                            {{ item.campus }}
+                            {% if item.building %}, {{ item.building }}{% endif %}
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="closure-section">
+                    <a
+                        href="{% url 'confirm_item_custody' item.id %}"
+                        class="button button-primary"
+                    >
+                        Confirm Custody
+                    </a>
+                </div>
+
+            </article>
+
+        {% endfor %}
+
+    </section>
+
+{% else %}
+
+    <section class="empty-state">
+
+        <div class="empty-icon">&#10003;</div>
+
+        <h2>Queue is clear</h2>
+
+        <p>
+            There are currently no found-item reports awaiting
+            physical custody confirmation.
+        </p>
+
+    </section>
+
+{% endif %}
+
+{% endblock %}
